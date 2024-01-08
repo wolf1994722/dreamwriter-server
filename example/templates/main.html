@@ -1,0 +1,384 @@
+<!-- templates/my_template.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Tester Chat Bot</title>
+    {% load static %}
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <h1 class="text-center mt-[90px] max-[451px]:mt-[30px] min-[768px]:text-5xl min-[451px]:text-4xl italic">Prompt Tester Chat Bot</h1>
+    <div class="max-w-[1200px] w-full px-[20px] min-[1200px]:px-0 max-[451px]:mt-[40px] mx-auto mt-[70px] pb-[60px]">
+        <div class="flex justify-around gap-[10px] flex-wrap">
+            {% csrf_token %}
+            <div class="max-[451px]:w-full">
+                <input type="text" class="block border-2 rounded-xl border-slate-400 w-full outline-none focus:border-blue-400 p-2" name="param1" placeholder="{{ param1 }}">
+                <input type="button" class="block cursor-pointer bg-green-700 hover:bg-green-800 text-white w-full font-bold py-2 px-6 rounded-xl mt-2" name="suggest_param" value="input1">
+            </div>
+            <div class="max-[451px]:w-full">
+                <input type="text" class="block border-2 rounded-xl border-slate-400 w-full outline-none focus:border-blue-400 p-2" name="param2" placeholder="{{ param2 }}">
+                <input type="button" class="block cursor-pointer bg-green-700 hover:bg-green-800 text-white w-full font-bold py-2 px-6 rounded-xl mt-2" name="suggest_param" value="input2">
+            </div>
+            <div class="max-[451px]:w-full">
+                <input type="text" class="block border-2 rounded-xl border-slate-400 w-full outline-none focus:border-blue-400 p-2" name="param3" placeholder="{{ param3 }}">
+                <input type="button" class="block cursor-pointer bg-green-700 hover:bg-green-800 text-white w-full font-bold py-2 px-6 rounded-xl mt-2" name="suggest_param" value="input3">
+            </div>
+            <div class="max-[451px]:w-full">
+                <input type="text" class="block border-2 rounded-xl border-slate-400 w-full outline-none focus:border-blue-400 p-2" name="param4" placeholder="{{ param4 }}">
+                <input type="button" class="block cursor-pointer bg-green-700 hover:bg-green-800 text-white w-full font-bold py-2 px-6 rounded-xl mt-2" name="suggest_param" value="input4">
+            </div>
+            <div class="max-[451px]:w-full">
+                <input type="text" class="block border-2 rounded-xl border-slate-400 w-full outline-none focus:border-blue-400 p-2" name="param5" placeholder="{{ param5 }}">
+                <input type="button" class="block cursor-pointer bg-green-700 hover:bg-green-800 text-white w-full font-bold py-2 px-6 rounded-xl mt-2" name="suggest_param" value="input5">
+            </div>
+        </div>
+        
+        <div class="mt-[50px]">
+            <textarea name="pr_text" class="w-full border-2 border-slate-400 p-2 outline-none focus:border-blue-400" id="pr_text" rows="10" placeholder="Type something..."></textarea>
+            <button id="btnPR" class="mt-[55px] block mx-auto bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-xl">Generate</button>
+        </div>
+        
+        <div class="mt-[100px] w-full">
+            <select name="type" class="border-slate-400 border-2 p-2 w-full outline-none focus:border-blue-400">
+                <option value="film" selected>
+                    <p>
+                        Can you suggest me a film to watch?
+                    </p>
+                </option>
+                <option value="place">
+                    <p>
+                        Can you suggest me a nice place to spend my holidays?
+                    </p>
+                </option>
+                <option value="activity">
+                    <p>
+                        Can you suggest me an activity or a hobby to do in my free time?
+                    </p>
+                </option>
+            </select>
+        </div>
+
+        <div class="mt-[15px]">
+            <textarea name="suggest_text" class="w-full border-2 border-slate-400 p-2 outline-none focus:border-blue-400" id="suggest_text" rows="10" placeholder="Type something..."></textarea>
+            <button id="btnSuggest" class="mt-[55px] block mx-auto bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-6 rounded-xl">Generate</button>
+            <input type="hidden" name="film_suggest">
+            <input type="hidden" name="place_suggest">
+            <input type="hidden" name="activity_suggest">
+        </div>
+        
+        <div class="mt-[100px]">
+            <textarea name="story_text" class="w-full border-2 border-slate-400 p-2 outline-none focus:border-blue-400" id="story_text" rows="10" placeholder="Type something..."></textarea>
+            <div class="mt-[55px] flex justify-center gap-[10px] flex-wrap">
+                <button class="bg-green-700 hover:bg-green-800 text-white max-[451px]:w-full font-bold py-2 px-6 rounded-xl" id="btnLoad">Load</button>
+                <button class="bg-green-700 hover:bg-green-800 text-white max-[451px]:w-full font-bold py-2 px-6 rounded-xl" id="btnStory">Generate</button>
+                <button class="bg-green-700 hover:bg-green-800 text-white max-[451px]:w-full font-bold py-2 px-6 rounded-xl" id="btnSave">Save</button>
+            </div>
+        </div>
+        <div id="spinner" class="fixed top-0 right-0 w-screen h-screen  scale-[2.5]">
+            {% comment %} <div class="bg-black opacity-0 w-full h-full"></div> {% endcomment %}
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-black absolute inset-x-1/2 inset-y-1/2 z-50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" stroke="currentColor" stroke-width="4" cx="12" cy="12" r="10"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            $("#spinner").hide();
+
+            $("#btnLoad").click(function () {
+                var input = document.createElement("input");
+                var file;
+                input.type = "file";
+                input.accept = "json/*";
+                input.addEventListener("change", function (event) {
+                    file = event.target.files[0];
+                    if (file) {
+                        var formData = new FormData();
+                        formData.append('file', file);
+                        $.ajax({
+                            url: '/api/upload_file',
+                            type: 'POST',
+                            data: formData,
+                            contentType: false,
+                            processData: false,
+                            success: function (response) {
+                                console.log('File upload successful', response);
+                                // Handle the response as needed
+                            },
+                            error: function (error) {
+                                console.error('Error in file upload', error);
+                                // Handle the error as needed
+                            }
+                        });
+                    }
+                });
+                input.click();
+            });
+
+            $("input[name='suggest_param']").click(function (e) {
+                var prompt = "";
+                var obj = e.target;
+                var input = $(obj).prev();
+
+                if ($(input).attr("name") == "param1"){
+                    prompt = "Can you suggest name for me?\
+                    Only name is required.\
+                    Please do not send any other sentences.\
+                    Please send only a name.";
+                }
+                else if ($(input).attr("name") == "param2"){
+                    prompt = "Can you suggest a year for me?\
+                    Only year is required.\
+                    Please do not send any other sentences.\
+                    Please send only a year.";
+                }
+                else if ($(input).attr("name") == "param3"){
+                    prompt = "Can you suggest a location for me?\
+                    Only location is required.\
+                    Please do not send any other sentences.\
+                    Please send only a location.";
+                }
+                else if ($(input).attr("name") == "param4"){
+                    prompt = "Can you suggest one film genre for me?\
+                    Only film genre is required.\
+                    Please do not send any other sentences.\
+                    Please send only a film genre.";
+                }
+                else if ($(input).attr("name") == "param5"){
+                    prompt = "Can you suggest a concise life philosophy for me?\
+                    Only concise life philosophy is required.\
+                    Please do not send any other sentences.\
+                    Please send only a concise life philosophy.";
+                }
+
+                console.log(prompt);
+                $("#spinner").show();
+                $.ajax({
+                    'url': '/api/suggest_input',
+                    'type': 'GET',
+                    'data': {
+                        'prompt': prompt,
+                    },
+                    success: function (response) {
+                        $("#spinner").hide();
+                        console.log(response)
+                        if (response !== "error"){
+                            input.val(response);
+                        }
+                    },
+                });
+
+            });
+
+            $("#btnPR").click(function () {
+                {% comment %} last_state = sessionStorage.getItem('last_state');
+                if (last_state < 2 && last_state !== null) {
+                    if(sessionStorage.getItem('param1') !== null){
+                        sessionStorage.removeItem('param1');
+                    }
+                    if(sessionStorage.getItem('param2') !== null){
+                        sessionStorage.removeItem('param2');
+                    }
+                    if(sessionStorage.getItem('param3') !== null){
+                        sessionStorage.removeItem('param3');
+                    }
+                    if(sessionStorage.getItem('param4') !== null){
+                        sessionStorage.removeItem('param4');
+                    }
+                    if(sessionStorage.getItem('param5') !== null){
+                        sessionStorage.removeItem('param5');
+                    }
+                    if(sessionStorage.getItem('pr_text') !== null){
+                        sessionStorage.removeItem('pr_text');
+                    }
+                    if(sessionStorage.getItem('prompt_type') !== null){
+                        sessionStorage.removeItem('prompt_type');
+                    }
+                    if(sessionStorage.getItem('suggest_text') !== null){
+                        sessionStorage.removeItem('suggest_text');
+                    }
+                } {% endcomment %}
+
+                $("#pr_text").text("");
+
+                var lastResponseLength = false;
+                var param1 =  $("input[name='param1']").val();
+                var param2 =  $("input[name='param2']").val();
+                var param3 =  $("input[name='param3']").val();
+                var param4 =  $("input[name='param4']").val();
+                var param5 =  $("input[name='param5']").val();
+
+                $.ajax({
+                    'url': '/api/get_prompt',
+                    'type': 'GET',
+                    'data': {
+                        'param1': param1,
+                        'param2': param2,
+                        'param3': param3,
+                        'param4': param4,
+                        'param5': param5,
+                        'type': 'pr',
+                    },
+                    xhrFields: {
+                        // Getting on progress streaming response
+                        onprogress: function(e)
+                        {
+                            var response = e.currentTarget.response;
+                            if(lastResponseLength === false)
+                            {
+                                progressResponse = response;
+                                lastResponseLength = response.length;
+                            }
+                            else
+                            {
+                                progressResponse = response.substring(lastResponseLength);
+                                lastResponseLength = response.length;
+                            }
+
+                            $("#pr_text").append(progressResponse);
+
+                        }
+                    },
+                    {% comment %} success: function () {
+                        sessionStorage.setItem('param1', param1);
+                        sessionStorage.setItem('param2', param2);
+                        sessionStorage.setItem('param3', param3);
+                        sessionStorage.setItem('param4', param4);
+                        sessionStorage.setItem('param5', param5);
+                        sessionStorage.setItem('last_state', 1);
+                    } {% endcomment %}
+                });
+            });
+
+            $("#btnSuggest").click(function () {
+                {% comment %} last_state = sessionStorage.getItem('last_state');
+                if (last_state < 3 && last_state !== null) {
+                    if(sessionStorage.getItem('pr_text') !== null){
+                        sessionStorage.removeItem('pr_text');
+                    }
+                    if(sessionStorage.getItem('prompt_type') !== null){
+                        sessionStorage.removeItem('prompt_type');
+                    }
+                    if(sessionStorage.getItem('suggest_text') !== null){
+                        sessionStorage.removeItem('suggest_text');
+                    }
+                } {% endcomment %}
+                $("#suggest_text").text("");
+
+                var lastResponseLength = false;
+
+                var param1 =  $("input[name='param1']").val();
+                var param2 =  $("input[name='param2']").val();
+                var param3 =  $("input[name='param3']").val();
+                var param4 =  $("input[name='param4']").val();
+                var param5 =  $("input[name='param5']").val();
+                var pr_text =  $("textarea[name='pr_text']").text();
+                var prompt_type =  $("select[name='type']").val();
+
+                $.ajax({
+                    'url': '/api/get_prompt',
+                    'type': 'GET',
+                    'data': {
+                        'param1': param1,
+                        'param2': param2,
+                        'param3': param3,
+                        'param4': param4,
+                        'param5': param5,
+                        'pr_text': pr_text,
+                        'prompt_type': prompt_type,
+                        'type': 'suggest',
+                    },
+                    xhrFields: {
+                        // Getting on progress streaming response
+                        onprogress: function(e)
+                        {
+                            var response = e.currentTarget.response;
+                            if(lastResponseLength === false)
+                            {
+                                progressResponse = response;
+                                lastResponseLength = response.length;
+                            }
+                            else
+                            {
+                                progressResponse = response.substring(lastResponseLength);
+                                lastResponseLength = response.length;
+                            }
+
+                            $("#suggest_text").append(progressResponse);
+
+                        }
+                    },
+                    {% comment %} success: function () {
+                        sessionStorage.setItem('pr_text', pr_text);
+                        sessionStorage.setItem('prompt_type', prompt_type);
+                    } {% endcomment %}
+                });
+            });
+
+            $("#btnStory").click(function () {
+                $("#story_text").text("");
+                $("#spinner").show();
+                var lastResponseLength = false;
+
+                var param1 =  $("input[name='param1']").val();
+                var param2 =  $("input[name='param2']").val();
+                var param3 =  $("input[name='param3']").val();
+                var param4 =  $("input[name='param4']").val();
+                var param5 =  $("input[name='param5']").val();
+                var pr_text =  $("textarea[name='pr_text']").text();
+                var prompt_type =  $("select[name='type']").val();
+                var suggest_text =  $("textarea[name='suggest_text']").text();
+
+                $.ajax({
+                    'url': '/api/get_prompt',
+                    'type': 'GET',
+                    'data': {
+                        'param1': param1,
+                        'param2': param2,
+                        'param3': param3,
+                        'param4': param4,
+                        'param5': param5,
+                        'pr_text': pr_text,
+                        'prompt_type': prompt_type,
+                        'suggest_text': suggest_text,
+                        'type': 'story',
+                    },
+                    xhrFields: {
+                        // Getting on progress streaming response
+                        onprogress: function(e)
+                        {
+                            $("#spinner").hide();
+                            var response = e.currentTarget.response;
+                            if(lastResponseLength === false)
+                            {
+                                progressResponse = response;
+                                lastResponseLength = response.length;
+                            }
+                            else
+                            {
+                                progressResponse = response.substring(lastResponseLength);
+                                lastResponseLength = response.length;
+                            }
+
+                            $("#story_text").append(progressResponse);
+
+                        }
+                    },
+                    {% comment %} success: function () {
+                        sessionStorage.setItem('suggest_text', suggest_text);
+                    } {% endcomment %}
+                });
+
+            });
+
+        });
+    </script>
+</body>
+</html>
